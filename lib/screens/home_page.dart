@@ -23,33 +23,34 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: const Color(0xFF000031),
-        body: _cityHome(context),
-        bottomNavigationBar: Container(
-          decoration: const BoxDecoration(
-            border: Border(
-              top: BorderSide(color: Colors.white, width: 1),
+      backgroundColor: const Color(0xFF000031),
+      body: _cityHome(context),
+      bottomNavigationBar: Container(
+        decoration: const BoxDecoration(
+          border: Border(
+            top: BorderSide(color: Colors.white, width: 1),
+          ),
+        ),
+        child: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: const Color(0xFF000031),
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.grey,
+          currentIndex: _selectedIndex,
+          onTap: _onItemTapped,
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home),
+              label: 'Home',
             ),
-          ),
-          child: BottomNavigationBar(
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: const Color(0xFF000031),
-            selectedItemColor: Colors.white,
-            unselectedItemColor: Colors.grey,
-            currentIndex: _selectedIndex,
-            onTap: _onItemTapped,
-            items: const <BottomNavigationBarItem>[
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home),
-                label: 'Home',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.search),
-                label: 'Search',
-              ),
-            ],
-          ),
-        ));
+            BottomNavigationBarItem(
+              icon: Icon(Icons.search),
+              label: 'Search',
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _emptyHome(BuildContext context) {
@@ -166,7 +167,10 @@ class _HomePageState extends State<HomePage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        DataBlock(topIcon: Icons.water_drop, midText: '24%', bottomText: 'Umidade'),
+                        DataBlock(
+                            topIcon: Icons.water_drop,
+                            midText: '24%',
+                            bottomText: 'Umidade'),
                         const VerticalDivider(
                           color: Colors.grey,
                           thickness: 1,
@@ -175,7 +179,9 @@ class _HomePageState extends State<HomePage> {
                           endIndent: 10,
                         ),
                         DataBlock(
-                            topIcon: Icons.wind_power, midText: '20km/h', bottomText: 'Veloc. Vento'),
+                            topIcon: Icons.wind_power,
+                            midText: '20km/h',
+                            bottomText: 'Veloc. Vento'),
                         const VerticalDivider(
                           color: Colors.grey,
                           thickness: 1,
@@ -183,7 +189,10 @@ class _HomePageState extends State<HomePage> {
                           indent: 10,
                           endIndent: 10,
                         ),
-                        DataBlock(topIcon: Icons.cloud, midText: '76%', bottomText: 'Chuva'),
+                        DataBlock(
+                            topIcon: Icons.cloud,
+                            midText: '76%',
+                            bottomText: 'Chuva'),
                       ],
                     ),
                   ),

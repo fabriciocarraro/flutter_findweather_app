@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_weather_app_api/screens/search_page.dart';
 import 'package:flutter_weather_app_api/screens/welcome_page.dart';
 
 void main() {
@@ -17,7 +18,7 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Overpass',
         primaryColor: Colors.white,
       ),
-      home: const WelcomePage(),
+      home: const SearchPage(),
     );
   }
 }
