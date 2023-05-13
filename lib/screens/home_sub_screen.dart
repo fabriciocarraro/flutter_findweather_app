@@ -1,56 +1,60 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_weather_app_api/extensions/size_extensions.dart';
-
+import 'package:flutter_weather_app_api/screens/main_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../components/hourly_weather_block.dart';
 import '../components/data_block.dart';
+import '../models/city.dart';
+import '../models/current_weather_city.dart';
+import '../services/api_service.dart';
 
-class HomePage extends StatefulWidget {
-  const HomePage({Key? key}) : super(key: key);
+class HomeSubScreen extends StatefulWidget {
+  const HomeSubScreen({Key? key}) : super(key: key);
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomeSubScreen> createState() => _HomeSubScreenState();
 }
 
-class _HomePageState extends State<HomePage> {
-  int _selectedIndex = 0;
+class _HomeSubScreenState extends State<HomeSubScreen> {
+  City? citySaved;
+  CurrentWeatherCity? currentWeatherCity;
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
+  Future<void> _loadCitySaved() async {
+    final prefs = await SharedPreferences.getInstance();
+    String encodedMap = (prefs.getString('citySaved') ?? '');
+    if (encodedMap != '') {
+      Map<String, dynamic> decodedMap = jsonDecode(encodedMap);
+      setState(() {
+        citySaved = City.fromMap(decodedMap);
+      });
+    }
+  }
+
+  Future<void> _getCurrentWeather() async {
+    ApiService service = ApiService();
+    setState(() async {
+      currentWeatherCity = await service.getCurrentWeather(citySaved!);
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    _loadCitySaved().then((value) {
+      if(citySaved != null) {
+        _getCurrentWeather();
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF000031),
-      body: _cityHome(context),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          border: Border(
-            top: BorderSide(color: Colors.white, width: 1),
-          ),
-        ),
-        child: BottomNavigationBar(
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: const Color(0xFF000031),
-          selectedItemColor: Colors.white,
-          unselectedItemColor: Colors.grey,
-          currentIndex: _selectedIndex,
-          onTap: _onItemTapped,
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.search),
-              label: 'Search',
-            ),
-          ],
-        ),
-      ),
-    );
+    return (citySaved == null)
+        ? _emptyHome(context)
+        : _cityHome(context);
   }
 
   Widget _emptyHome(BuildContext context) {
@@ -76,12 +80,26 @@ class _HomePageState extends State<HomePage> {
                   EdgeInsets.symmetric(vertical: context.percentHeight(0.13)),
               child: Image.asset('assets/images/climate-change.png'),
             ),
-            const Text(
-              'Choose your base city and check the weather in real time',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.grey,
-                fontSize: 22,
+            GestureDetector(
+              onTap: () {
+                Navigator.pushReplacement(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation1, animation2) =>
+                        const MainPage(selectedIndex: 1),
+                    transitionDuration: Duration.zero,
+                    reverseTransitionDuration: Duration.zero,
+                  ),
+                );
+              },
+              child: const Text(
+                'Click here to choose your base city and check the weather in real time',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  decoration: TextDecoration.underline,
+                  color: Colors.grey,
+                  fontSize: 22,
+                ),
               ),
             ),
           ],
@@ -97,7 +115,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           children: [
             Padding(
-              padding: EdgeInsets.only(top: context.percentHeight(0.08)),
+              padding: EdgeInsets.only(top: context.percentHeight(0.04)),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,9 +128,9 @@ class _HomePageState extends State<HomePage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'São Paulo, Brasil',
+                        currentWeatherCity!.city.getNameAndCountry(),
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontSize: 18,
                         ),
@@ -134,19 +152,21 @@ class _HomePageState extends State<HomePage> {
               padding: EdgeInsets.only(
                   top: context.percentHeight(0.03),
                   bottom: context.percentHeight(0.02)),
-              child: Image.asset('assets/images/raining.png'),
+              child: Image.network(
+                'https:${currentWeatherCity!.conditionIcon}',
+              ),
             ),
-            const Text(
-              '23ºC',
-              style: TextStyle(
+            Text(
+              currentWeatherCity!.temperatureCelsius.toString(),
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 76,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            const Text(
-              'Chuva moderada',
-              style: TextStyle(
+            Text(
+              currentWeatherCity!.conditionText,
+              style: const TextStyle(
                 color: Colors.grey,
                 fontSize: 30,
               ),
@@ -169,8 +189,8 @@ class _HomePageState extends State<HomePage> {
                       children: [
                         DataBlock(
                             topIcon: Icons.water_drop,
-                            midText: '24%',
-                            bottomText: 'Umidade'),
+                            midText: currentWeatherCity!.humidity.toString(),
+                            bottomText: 'Humidity'),
                         const VerticalDivider(
                           color: Colors.grey,
                           thickness: 1,
@@ -180,8 +200,8 @@ class _HomePageState extends State<HomePage> {
                         ),
                         DataBlock(
                             topIcon: Icons.wind_power,
-                            midText: '20km/h',
-                            bottomText: 'Veloc. Vento'),
+                            midText: '${currentWeatherCity!.windSpeedKph} km/h',
+                            bottomText: 'Wind speed'),
                         const VerticalDivider(
                           color: Colors.grey,
                           thickness: 1,
@@ -191,8 +211,8 @@ class _HomePageState extends State<HomePage> {
                         ),
                         DataBlock(
                             topIcon: Icons.cloud,
-                            midText: '76%',
-                            bottomText: 'Chuva'),
+                            midText: '${currentWeatherCity!.cloudCoverage.toString()}%',
+                            bottomText: 'Clouds'),
                       ],
                     ),
                   ),
@@ -201,15 +221,15 @@ class _HomePageState extends State<HomePage> {
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text(
+              children: const [
+                Text(
                   'Hoje',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 20,
                   ),
                 ),
-                const Text(
+                Text(
                   'Próximos 5 dias >',
                   style: TextStyle(
                     color: Colors.grey,

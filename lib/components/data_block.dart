@@ -25,7 +25,7 @@ class DataBlock extends StatelessWidget {
           padding: EdgeInsets.symmetric(vertical: context.percentHeight(0.005)),
           child: Text(
             midText,
-            style: TextStyle(
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 16,
               fontWeight: FontWeight.bold,
@@ -34,7 +34,7 @@ class DataBlock extends StatelessWidget {
         ),
         Text(
           bottomText,
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.grey,
             fontSize: 14,
           ),

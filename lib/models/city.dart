@@ -10,6 +10,8 @@ class City {
       required this.region,
       required this.country});
 
+  getNameAndCountry() => '$name, $country';
+
   City.fromMap(Map<String, dynamic> map)
       : id = map["id"],
         name = map["name"],

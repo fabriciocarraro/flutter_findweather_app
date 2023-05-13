@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_weather_app_api/extensions/size_extensions.dart';
-import 'package:flutter_weather_app_api/screens/home_page.dart';
+import 'package:flutter_weather_app_api/screens/home_sub_screen.dart';
 
 class WelcomePage extends StatelessWidget {
   const WelcomePage({Key? key}) : super(key: key);
@@ -48,7 +48,7 @@ class WelcomePage extends StatelessWidget {
                   onPressed: () {
                     Navigator.pushReplacement(
                       context,
-                      MaterialPageRoute(builder: (context) => const HomePage()),
+                      MaterialPageRoute(builder: (context) => const HomeSubScreen()),
                     );
                   },
                   style: ElevatedButton.styleFrom(

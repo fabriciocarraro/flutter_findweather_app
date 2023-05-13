@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_weather_app_api/models/current_weather_city.dart';
 import 'package:http/http.dart' as http;
 import '../auth/api_keys.dart';
 import '../models/city.dart';
@@ -22,6 +23,7 @@ class ApiService {
 
     http.Response response = await http.get(Uri.parse(_getSearchUrl(cityChars)),
         headers: {'Content-type': 'application/json'});
+
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
       for (var city in jsonData) {
@@ -33,16 +35,16 @@ class ApiService {
     }
   }
 
-  Future<String> getCurrentWeather(String cityName) async {
+  Future<CurrentWeatherCity> getCurrentWeather(City city) async {
     http.Response response = await http.get(
-        Uri.parse(_getCurrentWeatherUrl(cityName)),
+        Uri.parse(_getCurrentWeatherUrl(city.getNameAndCountry())),
         headers: {'Content-type': 'application/json'});
+
     if (response.statusCode == 200) {
       final jsonData = json.decode(response.body);
-      return jsonData;
+      return CurrentWeatherCity.fromMap(city, jsonData);
     } else {
       throw Exception('Failed to load data');
     }
-    return response.body;
   }
 }
