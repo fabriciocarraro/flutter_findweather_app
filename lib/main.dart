@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_weather_app_api/screens/main_page.dart';
+import 'package:provider/provider.dart';
+import 'models/current_weather_city_list.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(ChangeNotifierProvider(
+      create: (context) => CurrentWeatherCityList(currentWeatherCityList: []),
+      child: const FindWeatherApp()));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class FindWeatherApp extends StatelessWidget {
+  const FindWeatherApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -17,7 +20,9 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Overpass',
         primaryColor: Colors.white,
       ),
-      home: const MainPage(selectedIndex: 0,),
+      home: const MainPage(
+        selectedIndex: 0,
+      ),
     );
   }
 }

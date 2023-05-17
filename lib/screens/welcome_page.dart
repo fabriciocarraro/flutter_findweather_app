@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_weather_app_api/extensions/size_extensions.dart';
+import 'package:flutter_weather_app_api/common/size_extensions.dart';
 import 'package:flutter_weather_app_api/screens/home_sub_screen.dart';
 
 class WelcomePage extends StatelessWidget {

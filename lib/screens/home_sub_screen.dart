@@ -1,12 +1,10 @@
-import 'dart:convert';
-
+import 'package:intl/intl.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_weather_app_api/extensions/size_extensions.dart';
+import 'package:flutter_weather_app_api/common/size_extensions.dart';
 import 'package:flutter_weather_app_api/screens/main_page.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../components/hourly_weather_block.dart';
 import '../components/data_block.dart';
-import '../models/city.dart';
+import '../dao/dao.dart';
 import '../models/current_weather_city.dart';
 import '../services/api_service.dart';
 
@@ -18,43 +16,51 @@ class HomeSubScreen extends StatefulWidget {
 }
 
 class _HomeSubScreenState extends State<HomeSubScreen> {
-  City? citySaved;
-  CurrentWeatherCity? currentWeatherCity;
-
-  Future<void> _loadCitySaved() async {
-    final prefs = await SharedPreferences.getInstance();
-    String encodedMap = (prefs.getString('citySaved') ?? '');
-    if (encodedMap != '') {
-      Map<String, dynamic> decodedMap = jsonDecode(encodedMap);
-      setState(() {
-        citySaved = City.fromMap(decodedMap);
-      });
-    }
-  }
-
-  Future<void> _getCurrentWeather() async {
-    ApiService service = ApiService();
-    setState(() async {
-      currentWeatherCity = await service.getCurrentWeather(citySaved!);
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    _loadCitySaved().then((value) {
-      if(citySaved != null) {
-        _getCurrentWeather();
-      }
-    });
-  }
+  ApiService service = ApiService();
+  Dao dao = Dao();
 
   @override
   Widget build(BuildContext context) {
-    return (citySaved == null)
-        ? _emptyHome(context)
-        : _cityHome(context);
+    return FutureBuilder(
+      future: service.getSavedCityAndItsCurrentWeather(),
+      builder: (context, snapshot) {
+        CurrentWeatherCity? citySaved = snapshot.data;
+        switch (snapshot.connectionState) {
+          case ConnectionState.none:
+            return Center(
+              child: Column(
+                children: const [
+                  CircularProgressIndicator(),
+                  Text('Loading'),
+                ],
+              ),
+            );
+          case ConnectionState.waiting:
+            return Center(
+              child: Column(
+                children: const [
+                  CircularProgressIndicator(),
+                  Text('Loading'),
+                ],
+              ),
+            );
+          case ConnectionState.active:
+            return Center(
+              child: Column(
+                children: const [
+                  CircularProgressIndicator(),
+                  Text('Loading'),
+                ],
+              ),
+            );
+          case ConnectionState.done:
+            if (snapshot.hasData && citySaved != null) {
+              return _cityHome(context, citySaved);
+            }
+            return _emptyHome(context);
+        }
+      },
+    );
   }
 
   Widget _emptyHome(BuildContext context) {
@@ -108,7 +114,8 @@ class _HomeSubScreenState extends State<HomeSubScreen> {
     );
   }
 
-  Widget _cityHome(BuildContext context) {
+  Widget _cityHome(
+      BuildContext context, CurrentWeatherCity currentWeatherCity) {
     return SingleChildScrollView(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: context.percentWidth(0.05)),
@@ -128,7 +135,7 @@ class _HomeSubScreenState extends State<HomeSubScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        currentWeatherCity!.city.getNameAndCountry(),
+                        currentWeatherCity.city.getNameAndCountry(),
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           color: Colors.white,
@@ -136,9 +143,10 @@ class _HomeSubScreenState extends State<HomeSubScreen> {
                         ),
                       ),
                       Text(
-                        'Domingo, 01 Jan de 2023',
+                        DateFormat('EEEE, MMMM d, y')
+                            .format(DateTime.now()),
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.grey,
                           fontSize: 18,
                         ),
@@ -150,14 +158,16 @@ class _HomeSubScreenState extends State<HomeSubScreen> {
             ),
             Padding(
               padding: EdgeInsets.only(
-                  top: context.percentHeight(0.03),
-                  bottom: context.percentHeight(0.02)),
+                top: context.percentHeight(0.02),
+              ),
               child: Image.network(
-                'https:${currentWeatherCity!.conditionIcon}',
+                'https:${currentWeatherCity.conditionIcon}',
+                height: context.percentHeight(0.21),
+                fit: BoxFit.cover,
               ),
             ),
             Text(
-              currentWeatherCity!.temperatureCelsius.toString(),
+              '${currentWeatherCity.temperatureCelsius.toInt().toString()}º ',
               style: const TextStyle(
                 color: Colors.white,
                 fontSize: 76,
@@ -165,7 +175,7 @@ class _HomeSubScreenState extends State<HomeSubScreen> {
               ),
             ),
             Text(
-              currentWeatherCity!.conditionText,
+              currentWeatherCity.conditionText,
               style: const TextStyle(
                 color: Colors.grey,
                 fontSize: 30,
@@ -188,8 +198,9 @@ class _HomeSubScreenState extends State<HomeSubScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
                         DataBlock(
-                            topIcon: Icons.water_drop,
-                            midText: currentWeatherCity!.humidity.toString(),
+                            topIcon: 'assets/images/drop-miniature.png',
+                            midText:
+                                '${currentWeatherCity.humidity.toString()}%',
                             bottomText: 'Humidity'),
                         const VerticalDivider(
                           color: Colors.grey,
@@ -199,8 +210,8 @@ class _HomeSubScreenState extends State<HomeSubScreen> {
                           endIndent: 10,
                         ),
                         DataBlock(
-                            topIcon: Icons.wind_power,
-                            midText: '${currentWeatherCity!.windSpeedKph} km/h',
+                            topIcon: 'assets/images/wind-miniature.png',
+                            midText: '${currentWeatherCity.windSpeedKph} km/h',
                             bottomText: 'Wind speed'),
                         const VerticalDivider(
                           color: Colors.grey,
@@ -210,8 +221,9 @@ class _HomeSubScreenState extends State<HomeSubScreen> {
                           endIndent: 10,
                         ),
                         DataBlock(
-                            topIcon: Icons.cloud,
-                            midText: '${currentWeatherCity!.cloudCoverage.toString()}%',
+                            topIcon: 'assets/images/nuvem.png',
+                            midText:
+                                '${currentWeatherCity.cloudCoverage.toString()}%',
                             bottomText: 'Clouds'),
                       ],
                     ),
@@ -220,7 +232,7 @@ class _HomeSubScreenState extends State<HomeSubScreen> {
               ),
             ),
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: const [
                 Text(
                   'Hoje',
@@ -229,13 +241,13 @@ class _HomeSubScreenState extends State<HomeSubScreen> {
                     fontSize: 20,
                   ),
                 ),
-                Text(
-                  'Próximos 5 dias >',
-                  style: TextStyle(
-                    color: Colors.grey,
-                    fontSize: 20,
-                  ),
-                ),
+                // Text(
+                //   'Próximos 5 dias >',
+                //   style: TextStyle(
+                //     color: Colors.grey,
+                //     fontSize: 20,
+                //   ),
+                // ),
               ],
             ),
             Padding(
@@ -244,18 +256,24 @@ class _HomeSubScreenState extends State<HomeSubScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   HourlyWeatherBlock(
-                      topText: '23º',
-                      topIcon: Icons.sunny,
+                      topText:
+                          '${currentWeatherCity.temperature9AM.toInt().toString()}º',
+                      topIcon: currentWeatherCity.icon9AM,
                       bottomText: '09:00'),
                   HourlyWeatherBlock(
-                      topText: '18º',
-                      topIcon: Icons.cloud,
+                      topText:
+                          '${currentWeatherCity.temperature1PM.toInt().toString()}º',
+                      topIcon: currentWeatherCity.icon1PM,
                       bottomText: '13:00'),
                   HourlyWeatherBlock(
-                      topText: '8º', topIcon: Icons.sunny, bottomText: '17:00'),
+                      topText:
+                          '${currentWeatherCity.temperature5PM.toInt().toString()}º',
+                      topIcon: currentWeatherCity.icon5PM,
+                      bottomText: '17:00'),
                   HourlyWeatherBlock(
-                      topText: '28º',
-                      topIcon: Icons.cloud,
+                      topText:
+                          '${currentWeatherCity.temperature11PM.toInt().toString()}º',
+                      topIcon: currentWeatherCity.icon11PM,
                       bottomText: '23:00'),
                 ],
               ),

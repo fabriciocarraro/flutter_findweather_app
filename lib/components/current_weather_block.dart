@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_weather_app_api/extensions/size_extensions.dart';
+import 'package:flutter_weather_app_api/common/size_extensions.dart';
 import 'package:flutter_weather_app_api/models/current_weather_city.dart';
 
 class CurrentWeatherBlock extends StatelessWidget {
@@ -10,9 +10,11 @@ class CurrentWeatherBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    double blockSize = context.percentHeight(0.31);
+
     return Container(
       constraints: BoxConstraints(
-        minHeight: context.percentHeight(0.31),
+        minHeight: blockSize,
       ),
       decoration: BoxDecoration(
         color: const Color(0xFF010950),

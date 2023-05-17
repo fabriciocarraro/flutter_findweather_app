@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_weather_app_api/extensions/size_extensions.dart';
+import 'package:flutter_weather_app_api/common/size_extensions.dart';
 
 class DataBlock extends StatelessWidget {
-  final IconData topIcon;
+  final String topIcon;
   final String midText;
   final String bottomText;
 
@@ -17,9 +17,13 @@ class DataBlock extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Icon(
-          topIcon,
-          color: Colors.white,
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 3.0),
+          child: Image.asset(
+            topIcon,
+            height: context.percentHeight(0.03),
+            fit: BoxFit.cover,
+          ),
         ),
         Padding(
           padding: EdgeInsets.symmetric(vertical: context.percentHeight(0.005)),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_weather_app_api/screens/home_sub_screen.dart';
 import 'package:flutter_weather_app_api/screens/search_sub_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class MainPage extends StatefulWidget {
   final int? selectedIndex;

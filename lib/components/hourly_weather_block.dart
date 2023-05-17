@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_weather_app_api/extensions/size_extensions.dart';
+import 'package:flutter_weather_app_api/common/size_extensions.dart';
 
 class HourlyWeatherBlock extends StatelessWidget {
   final String topText;
-  final IconData topIcon;
+  final String topIcon;
   final String bottomText;
 
   const HourlyWeatherBlock(
@@ -28,25 +28,25 @@ class HourlyWeatherBlock extends StatelessWidget {
           children: [
             Text(
               topText,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
             Padding(
-              padding:
-                  EdgeInsets.symmetric(vertical: context.percentHeight(0.01)),
-              child: Icon(
-                topIcon,
-                color: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 3.0),
+              child: Image.network(
+                'https:$topIcon',
+                height: context.percentHeight(0.05),
+                fit: BoxFit.cover,
               ),
             ),
             Text(
               bottomText,
-              style: TextStyle(
+              style: const TextStyle(
                 color: Colors.grey,
-                fontSize: 12,
+                fontSize: 14,
               ),
             ),
           ],
